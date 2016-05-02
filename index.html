@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Read</title>
+    <script type="text/javascript">
+        function getData(url, onReady){       //this will read file and send information to other 
+           var xmlhttp;
+
+           if(window.XMLHttpRequest){
+               xmlhttp = new XMLHttpRequest();
+           }else{
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+
+            xmlhttp.responseType = 'arraybuffer';
+            xmlhttp.onreadystatechange = function(){
+
+               if(xmlhttp.readyState == 4){
+                 onReady.call(null, xmlhttp.response);
+               }
+           }
+
+           xmlhttp.open("GET", url, true);
+           xmlhttp.send();
+
+        }
+
+
+        getData('1.pcm', (response) => {
+
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            var audioCtx = new AudioContext();
+
+            var pcm16Buffer = new Int16Array(response);
+            
+            var buffer = new ArrayBuffer(pcm16Buffer.length)
+            
+            for(var i =0; i < pcm16Buffer.length; i++){
+                buffer[i] = pcm16Buffer[i]
+            }
+            var dv = new DataView(buffer);
+
+            var frameCount = pcm16Buffer.length;
+            var channels = 1;
+            var audioBuffer = audioCtx.createBuffer(channels, frameCount, 8000);
+
+            for (var channel = 0; channel < channels; ++channel) {
+                var channelBuffer = audioBuffer.getChannelData(channel);
+                for (var i = 0, j=0; i < frameCount; ++i, j+=4) {
+                  channelBuffer[i] = dv.getFloat32(j, true);
+                }
+            }
+
+            // var dv = new DataView(response);
+
+            // var tvBuffer = new ArrayBuffer(response.byteLength*4);
+            // var tv = new DataView(tvBuffer);
+
+            // for(var i =0, j=0; i < dv.byteLength; i+=2, j+=4){
+            //     tv.setFloat32(j, dv.getInt16(i, true));
+            // }
+            
+        
+            // audioCtx.decodeAudioData(response, function(buffer) {
+            //     console.log(buffer);
+
+            //     // var audioBuffer = audioCtx.createBuffer(1, buffer.byteLength, 8000);
+            //     // var channelBuffer = audioBuffer.getChannelData(0);
+            //     // for(var i=0; i < dv.byteLength; i++){
+            //     //     channelBuffer[i] = dv.buffer[i];
+            //     // }
+
+            //     // var source = audioCtx.createBufferSource();
+            //     // source.buffer = buffer;
+            //     // source.connect(audioCtx.destination);
+            //     // source.start(0);
+
+
+            // }, (e)=>{
+            //     console.log(e);
+            // });
+
+            // var buffer = new ArrayBuffer(response.length);
+            // var dv = new DataView(buffer);
+
+            // for(var i =0; i < dv.byteLength; i++){
+            //     dv.setUint8(i, response[i]);
+            // }
+
+            // var samples = [];
+            // for(var i=0; i < buffer.byteLength; i+=2){
+            //     samples.push( dv.getInt16(i, true) )
+            // }
+
+            // console.log(samples);
+
+            // var qBuffer = new ArrayBuffer(samples.length*4);
+            // var qDv = new DataView(qBuffer);
+
+            // for(var i =0, j = 0; i < samples.length; i++, j+=4){
+            //     qDv.setFloat32(j, samples[i]);               
+            // }
+
+            // var destBuffer = new ArrayBuffer(samples.length);
+            // for(var i =0; i < samples.length; i++){
+            //     destBuffer[i] = samples[i]
+            // }
+
+            // audioCtx.decodeAudioData(destBuffer, (buffer)=>{
+            //   console.log(buffer)
+            // }, (error)=>{
+            //     console.log(error);
+            // });
+
+            // var samples = [];
+            // for(var i =0; i < dv.byteLength/4; i+=4){
+            //     samples.push(dv.getFloat32(i));
+            // }
+
+            // console.log(samples);
+
+
+            // var audioBuffer = audioCtx.createBuffer(1, dv.byteLength, 8000);
+            // var channelBuffer = audioBuffer.getChannelData(0);
+            // for(var i=0; i < dv.byteLength; i++){
+            //     channelBuffer[i] = dv.buffer[i];
+            // }
+            // // console.log(channelBuffer);
+            
+            var source = audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioCtx.destination);
+            source.start(0);
+
+        })
+
+        
+    </script>
+
+</head>
+<body>
+
+</body>
+</html>
